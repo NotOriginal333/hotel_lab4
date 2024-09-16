@@ -62,10 +62,12 @@ class ModelTests(TestCase):
 
     def test_create_cottage(self):
         """Test creating a cottage is successful."""
+        user = create_user()
         cottage = models.Cottage.objects.create(
             name='Sample cottage name',
             base_capacity=5,
             price_per_night=Decimal('500.50'),
+            user=user
         )
 
         self.assertEqual('Sample cottage name', cottage.name)
@@ -74,9 +76,11 @@ class ModelTests(TestCase):
 
     def test_create_amenity(self):
         """Test creating an amenity is successful."""
+        user = create_user()
         amenity = models.Amenities.objects.create(
             name='Sample amenity name',
-            additional_capacity=5
+            additional_capacity=5,
+            user=user
         )
 
         self.assertEqual('Sample amenity name', amenity.name)

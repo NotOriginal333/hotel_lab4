@@ -46,6 +46,10 @@ class Amenities(models.Model):
     """Amenities for cottages and hotel."""
     name = models.CharField(max_length=100)
     additional_capacity = models.IntegerField(default=0)
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE
+    )
 
     def __str__(self):
         return f"{self.name} (+{self.additional_capacity})"
@@ -60,9 +64,13 @@ class Cottage(models.Model):
     name = models.CharField(max_length=100)
     category = models.CharField(max_length=255, choices=CATEGORY_CHOICES, default='standard')
     base_capacity = models.IntegerField()
-    amenities = models.ManyToManyField(Amenities, related_name='cottages')
+    amenities = models.ManyToManyField(Amenities)
     price_per_night = models.DecimalField(max_digits=10, decimal_places=2)
     total_capacity = models.IntegerField(editable=False, default=0)
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE
+    )
 
     def calculate_total_capacity(self):
         """Calculate the total capacity of the cottage including amenities."""
