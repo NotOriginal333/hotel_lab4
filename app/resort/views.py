@@ -101,8 +101,25 @@ class AmenitiesViewSet(BaseCottageAttrViewSet,
     queryset = Amenities.objects.all()
 
 
-class BookingViewSet(BaseCottageAttrViewSet,
+class BookingViewSet(mixins.UpdateModelMixin,
+                     mixins.DestroyModelMixin,
+                     mixins.ListModelMixin,
+                     viewsets.GenericViewSet,
                      mixins.CreateModelMixin):
     """Manage booking in the database."""
+    authentication_classes = (TokenAuthentication,)
+    permission_classes = (IsAuthenticated,)
     serializer_class = serializers.BookingSerializer
     queryset = Booking.objects.all()
+
+    def get_queryset(self):
+        """Filter queryset for authenticated user."""
+        assigned_only = bool(
+            int(self.request.query_params.get('assigned_only', 0))
+        )
+        queryset = self.queryset
+        if assigned_only:
+            queryset = queryset.filter(cottage__isnull=False)
+        return queryset.filter(
+            user=self.request.user
+        ).order_by('-check_in').distinct()

@@ -81,7 +81,7 @@ class Cottage(models.Model):
         return total_capacity
 
     def __str__(self):
-        return f'{self.name}, {self.category}, {self.base_capacity}, {self.price_per_night}'
+        return f'{self.name}, {self.category}, max. guests - {self.total_capacity}, price - {self.price_per_night}'
 
 
 class Booking(models.Model):
