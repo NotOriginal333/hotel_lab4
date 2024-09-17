@@ -71,3 +71,20 @@ class CottageSerializer(serializers.ModelSerializer):
         cottage.save()
 
         return cottage
+
+
+class AvailabilityCheckSerializer(serializers.Serializer):
+    cottage = serializers.IntegerField()
+    check_in = serializers.DateField()
+    check_out = serializers.DateField()
+
+    def validate(self, data):
+        check_in = data.get('check_in')
+        check_out = data.get('check_out')
+
+        if check_in >= check_out:
+            raise serializers.ValidationError({
+                'check_out': 'Check-out date must be later than check-in date.'
+            })
+
+        return data

@@ -173,3 +173,91 @@ class PrivateBookingApiTests(TestCase):
         res = self.client.delete(url)
         self.assertEqual(res.status_code, status.HTTP_204_NO_CONTENT)
         self.assertFalse(Booking.objects.filter(id=booking.id).exists())
+
+    def test_duplicate_booking_for_same_cottage(self):
+        """Test that booking the same cottage for the same dates raises error."""
+        payload = {
+            'cottage': self.cottage.id,
+            'check_in': '2024-10-01',
+            'check_out': '2024-10-05',
+            'customer_name': 'John Doe',
+            'customer_email': 'john.doe@example.com'
+        }
+        self.client.post(BOOKING_URL, payload, format='json')
+
+        res = self.client.post(BOOKING_URL, payload, format='json')
+
+        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_duplicate_booking_for_same_customer_in_another_cottage(self):
+        """Test that booking another cottage for the same customer on the same dates raises error."""
+        another_cottage = create_cottage(
+            self.user,
+            name='Another Cottage',
+            base_capacity=4,
+            price_per_night='150.00'
+        )
+
+        Booking.objects.create(
+            cottage=self.cottage,
+            user=self.user,
+            check_in='2024-10-01',
+            check_out='2024-10-05',
+            customer_name='John Doe',
+            customer_email='john.doe@example.com'
+        )
+
+        payload = {
+            'cottage': another_cottage.id,
+            'check_in': '2024-10-01',
+            'check_out': '2024-10-05',
+            'customer_name': 'John Doe',
+            'customer_email': 'john.doe@example.com'
+        }
+
+        res = self.client.post(BOOKING_URL, payload, format='json')
+
+        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
+
+
+class CheckAvailabilityApiTests(TestCase):
+    """Test the Check Availability API."""
+
+    def setUp(self):
+        self.client = APIClient()
+        self.user = create_user()
+        self.client.force_authenticate(self.user)
+        self.cottage = create_cottage(self.user, name='Test Cottage', base_capacity=4, price_per_night='100.00')
+
+    def test_check_availability_valid_dates(self):
+        """Test checking availability for valid dates."""
+        payload = {
+            'cottage': self.cottage.id,
+            'check_in': '2024-10-01',
+            'check_out': '2024-10-05'
+        }
+        url = reverse('resort:check-availability')
+        res = self.client.post(url, payload, format='json')
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.assertEqual(res.data['available'], True)
+
+    def test_check_availability_dates_with_existing_booking(self):
+        """Test checking availability for dates that overlap with an existing booking."""
+        Booking.objects.create(
+            cottage=self.cottage,
+            user=self.user,
+            check_in='2024-10-01',
+            check_out='2024-10-05',
+            customer_name='John Doe',
+            customer_email='john.doe@example.com'
+        )
+        payload = {
+            'cottage': self.cottage.id,
+            'check_in': '2024-10-01',
+            'check_out': '2024-10-05'
+        }
+        url = reverse('resort:check-availability')
+        res = self.client.post(url, payload, format='json')
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.assertEqual(res.data['available'], False)
+        self.assertEqual(res.data['message'], 'The cottage is not available for the selected dates.')

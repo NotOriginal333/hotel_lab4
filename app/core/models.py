@@ -5,6 +5,7 @@ from django.contrib.auth.models import (
     PermissionsMixin
 )
 from django.conf import settings
+from rest_framework.exceptions import ValidationError
 
 
 class UserManager(BaseUserManager):
@@ -97,15 +98,31 @@ class Booking(models.Model):
     customer_email = models.EmailField()
     is_confirmed = models.BooleanField(default=False)
 
-    def check_availability(self):
-        """Check if cottage is available for the booking dates."""
+    def clean(self):
         overlapping_bookings = Booking.objects.filter(
             cottage=self.cottage,
             check_in__lt=self.check_out,
-            check_out__gt=self.check_in
-        ).exists()
+            check_out__gt=self.check_in,
+        ).exclude(id=self.id)
 
-        return not overlapping_bookings
+        if overlapping_bookings.exists():
+            raise ValidationError('This cottage is already booked for the selected dates.')
+
+        customer_bookings = Booking.objects.filter(
+            customer_email=self.customer_email,
+            check_in__lt=self.check_out,
+            check_out__gt=self.check_in
+        ).exclude(id=self.id)
+
+        if customer_bookings.exists():
+            raise ValidationError('This customer already has a booking in another cottage for the selected dates.')
+
+        if self.check_in >= self.check_out:
+            raise ValidationError('Check-out date must be later than check-in date.')
+
+    def save(self, *args, **kwargs):
+        self.clean()
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return f'Booking for {self.customer_name} in {self.cottage.name}'

@@ -10,7 +10,7 @@ from drf_spectacular.utils import (
 from rest_framework import (
     viewsets,
     mixins,
-    status,
+    status, generics,
 )
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -48,18 +48,6 @@ class CottageViewSet(viewsets.ModelViewSet):
             ),
         ]
     )
-    def get_queryset(self):
-        """Retrieve amenities filtered by whether they are assigned to cottages."""
-        assigned_only = self.request.query_params.get('assigned_only')
-        queryset = self.queryset
-
-        if assigned_only:
-            queryset = queryset.filter(cottages__isnull=False).distinct()
-
-        return queryset.filter(
-            user=self.request.user,
-        ).order_by('-id').distinct()
-
     def get_queryset(self):
         """Filter queryset for authenticated user."""
         assigned_only = bool(
@@ -123,3 +111,33 @@ class BookingViewSet(mixins.UpdateModelMixin,
         return queryset.filter(
             user=self.request.user
         ).order_by('-check_in').distinct()
+
+
+class CheckAvailabilityView(generics.GenericAPIView):
+    serializer_class = serializers.AvailabilityCheckSerializer
+
+    def post(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        cottage_id = serializer.validated_data['cottage']
+        check_in = serializer.validated_data['check_in']
+        check_out = serializer.validated_data['check_out']
+
+        cottage = Cottage.objects.get(id=cottage_id)
+
+        overlapping_bookings = Booking.objects.filter(
+            cottage=cottage,
+            check_in__lt=check_out,
+            check_out__gt=check_in
+        )
+
+        if overlapping_bookings.exists():
+            return Response({
+                'available': False,
+                'message': 'The cottage is not available for the selected dates.'
+            }, status=status.HTTP_200_OK)
+        else:
+            return Response({
+                'available': True,
+                'message': 'The cottage is available for the selected dates.'
+            }, status=status.HTTP_200_OK)
