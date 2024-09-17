@@ -82,3 +82,30 @@ class Cottage(models.Model):
 
     def __str__(self):
         return f'{self.name}, {self.category}, {self.base_capacity}, {self.price_per_night}'
+
+
+class Booking(models.Model):
+    """Booking model for managing cottage reservations."""
+    cottage = models.ForeignKey(Cottage, on_delete=models.CASCADE)
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE
+    )
+    check_in = models.DateField()
+    check_out = models.DateField()
+    customer_name = models.CharField(max_length=255)
+    customer_email = models.EmailField()
+    is_confirmed = models.BooleanField(default=False)
+
+    def check_availability(self):
+        """Check if cottage is available for the booking dates."""
+        overlapping_bookings = Booking.objects.filter(
+            cottage=self.cottage,
+            check_in__lt=self.check_out,
+            check_out__gt=self.check_in
+        ).exists()
+
+        return not overlapping_bookings
+
+    def __str__(self):
+        return f'Booking for {self.customer_name} in {self.cottage.name}'

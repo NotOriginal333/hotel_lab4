@@ -1,6 +1,7 @@
 """
 Tests for models.
 """
+from datetime import timedelta
 from decimal import Decimal
 
 from unittest.mock import patch
@@ -9,6 +10,7 @@ from django.test import TestCase
 from django.contrib.auth import get_user_model
 
 from core import models
+from django.utils import timezone
 
 
 def create_user(email='user@example.com', password='testpass123'):
@@ -85,3 +87,28 @@ class ModelTests(TestCase):
 
         self.assertEqual('Sample amenity name', amenity.name)
         self.assertEqual(5, amenity.additional_capacity)
+
+    def test_create_booking(self):
+        """Test creating a booking is successful."""
+        user = create_user()
+        cottage = models.Cottage.objects.create(
+            name='Sample cottage name',
+            base_capacity=5,
+            price_per_night=Decimal('500.50'),
+            user=user
+        )
+        check_in = timezone.now().date() + timedelta(days=1)
+        check_out = check_in + timedelta(days=2)
+        booking = models.Booking.objects.create(
+            cottage=cottage,
+            check_in=check_in,
+            check_out=check_out,
+            customer_name="username",
+            customer_email="example@example.com",
+            user=user
+        )
+
+        self.assertEqual(booking.check_in, check_in)
+        self.assertEqual(booking.check_out, check_out)
+        self.assertEqual(booking.customer_name, "username")
+        self.assertEqual(booking.cottage, cottage)
