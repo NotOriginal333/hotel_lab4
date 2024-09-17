@@ -20,6 +20,7 @@ from rest_framework.permissions import IsAuthenticated
 from core.models import (
     Cottage,
     Amenities,
+    Booking,
 )
 from resort import serializers
 
@@ -98,3 +99,10 @@ class AmenitiesViewSet(BaseCottageAttrViewSet,
     """Manage amenities in the database."""
     serializer_class = serializers.AmenitiesSerializer
     queryset = Amenities.objects.all()
+
+
+class BookingViewSet(BaseCottageAttrViewSet,
+                     mixins.CreateModelMixin):
+    """Manage booking in the database."""
+    serializer_class = serializers.BookingSerializer
+    queryset = Booking.objects.all()

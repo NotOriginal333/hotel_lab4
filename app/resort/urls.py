@@ -12,6 +12,7 @@ from resort import views
 router = DefaultRouter()
 router.register('cottages', views.CottageViewSet)
 router.register('amenities', views.AmenitiesViewSet)
+router.register('booking', views.BookingViewSet)
 
 app_name = 'resort'
 

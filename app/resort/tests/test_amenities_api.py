@@ -50,7 +50,7 @@ class PrivateAmenitiesApiTest(TestCase):
         self.client = APIClient()
         self.client.force_authenticate(self.user)
 
-    def test_retrieve_tags(self):
+    def test_retrieve_amenities(self):
         """Test retrieving a list of amenities."""
         Amenities.objects.create(user=self.user, name='Wi-Fi')
         Amenities.objects.create(user=self.user, name='Sea')
@@ -75,7 +75,7 @@ class PrivateAmenitiesApiTest(TestCase):
         self.assertEqual(res.data[0]['name'], amenity.name)
         self.assertEqual(res.data[0]['id'], amenity.id)
 
-    def test_update_tag(self):
+    def test_update_amenity(self):
         """Test updating an amenity."""
         amenity = Amenities.objects.create(user=self.user, name='Good Dinner')
 
@@ -87,7 +87,7 @@ class PrivateAmenitiesApiTest(TestCase):
         amenity.refresh_from_db()
         self.assertEqual(amenity.name, payload['name'])
 
-    def test_delete_tag(self):
+    def test_delete_amenity(self):
         """Test deleting an amenity."""
         amenity = Amenities.objects.create(user=self.user, name='Big Bed')
 
