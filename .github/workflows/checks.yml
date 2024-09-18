@@ -1,22 +1,32 @@
----
 name: Checks
 
-on: [ push ]
+on: [push]
 
 jobs:
   test-lint:
     name: Test
     runs-on: ubuntu-22.04
     steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.12'
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
       - name: Login to Docker Hub
-        uses: docker/login-action@v1
+        uses: docker/login-action@v2
         with:
           username: ${{ secrets.DOCKERHUB_USER }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
+
       - name: Create .env.dev file
         run: |
-          touch .env.dev
-          echo "DEBUG=${{ secrets.DEBUG }}" >> .env.dev
+          echo "DEBUG=${{ secrets.DEBUG }}" > .env.dev
           echo "SECRET_KEY=${{ secrets.SECRET_KEY }}" >> .env.dev
           echo "DJANGO_ALLOWED_HOSTS=${{ secrets.DJANGO_ALLOWED_HOSTS }}" >> .env.dev
           echo "SQL_ENGINE=${{ secrets.SQL_ENGINE }}" >> .env.dev
@@ -30,8 +40,14 @@ jobs:
           echo "POSTGRES_USER=${{ secrets.POSTGRES_USER }}" >> .env.dev
           echo "POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}" >> .env.dev
           echo "POSTGRES_DB=${{ secrets.POSTGRES_DB }}" >> .env.dev
-      - name: Checkout
-        uses: actions/checkout@v2
-      - name: Test backend
-        run: docker compose run --rm backend sh -c "python manage.py wait_for_db && python manage.py test"
+
+      - name: Build and run Docker Compose
+        run: |
+          docker-compose -f docker-compose.yml up -d --build
+
+      - name: Run backend tests
+        run: docker-compose run --rm backend sh -c "python manage.py wait_for_db && python manage.py test"
       
+      - name: Shut down Docker Compose
+        if: always()
+        run: docker-compose down
