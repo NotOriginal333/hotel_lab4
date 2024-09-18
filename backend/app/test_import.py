@@ -4,9 +4,9 @@ import os
 
 def test_import():
     try:
-        import app.core
-        import app.user
-        import app.resort
+        import core
+        import user
+        import resort
         print("Modules imported successfully")
     except ImportError as e:
         print(f"Import error: {e}")
