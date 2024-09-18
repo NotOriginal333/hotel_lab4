@@ -15,6 +15,7 @@ jobs:
           password: ${{ secrets.DOCKERHUB_TOKEN }}
       - name: Create .env.dev file
         run: |
+          touch .env.dev
           echo "DEBUG=${{ secrets.DEBUG }}" >> .env.dev
           echo "SECRET_KEY=${{ secrets.SECRET_KEY }}" >> .env.dev
           echo "DJANGO_ALLOWED_HOSTS=${{ secrets.DJANGO_ALLOWED_HOSTS }}" >> .env.dev
