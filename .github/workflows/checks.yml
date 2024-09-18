@@ -43,11 +43,11 @@ jobs:
 
       - name: Build and run Docker Compose
         run: |
-          docker-compose -f docker-compose.yml up -d --build
+          docker compose -f docker-compose.yml up -d --build
 
       - name: Run backend tests
-        run: docker-compose run --rm backend sh -c "python manage.py wait_for_db && python manage.py test"
+        run: docker compose run --rm backend sh -c "python manage.py wait_for_db && python manage.py test"
       
       - name: Shut down Docker Compose
         if: always()
-        run: docker-compose down
+        run: docker compose down
