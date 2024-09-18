@@ -10,8 +10,8 @@ from django.test import TestCase
 from rest_framework import status
 from rest_framework.test import APIClient
 
-from core.models import Amenities, Cottage
-from resort.serializers import AmenitiesSerializer
+from app.core.models import Amenities, Cottage
+from app.resort.serializers import AmenitiesSerializer
 
 AMENITIES_URL = reverse('resort:amenities-list')
 
