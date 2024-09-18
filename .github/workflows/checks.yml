@@ -13,6 +13,22 @@ jobs:
         with:
           username: ${{ secrets.DOCKERHUB_USER }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Create .env.dev file
+        run: |
+          echo "DEBUG=${{ secrets.DEBUG }}" >> .env.dev
+          echo "SECRET_KEY=${{ secrets.SECRET_KEY }}" >> .env.dev
+          echo "DJANGO_ALLOWED_HOSTS=${{ secrets.DJANGO_ALLOWED_HOSTS }}" >> .env.dev
+          echo "SQL_ENGINE=${{ secrets.SQL_ENGINE }}" >> .env.dev
+          echo "SQL_DATABASE=${{ secrets.SQL_DATABASE }}" >> .env.dev
+          echo "SQL_USER=${{ secrets.SQL_USER }}" >> .env.dev
+          echo "SQL_PASSWORD=${{ secrets.SQL_PASSWORD }}" >> .env.dev
+          echo "SQL_HOST=${{ secrets.SQL_HOST }}" >> .env.dev
+          echo "SQL_PORT=${{ secrets.SQL_PORT }}" >> .env.dev
+          echo "DATABASE=${{ secrets.DATABASE }}" >> .env.dev
+          echo "REACT_APP_API_URL=${{ secrets.REACT_APP_API_URL }}" >> .env.dev
+          echo "POSTGRES_USER=${{ secrets.POSTGRES_USER }}" >> .env.dev
+          echo "POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}" >> .env.dev
+          echo "POSTGRES_DB=${{ secrets.POSTGRES_DB }}" >> .env.dev
       - name: Checkout
         uses: actions/checkout@v2
       - name: Test backend
