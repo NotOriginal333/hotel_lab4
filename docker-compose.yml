@@ -1,13 +1,15 @@
 version: "3.9"
 
 services:
-  app:
+  backend:
     build:
-      context: .
+      context: ./backend
     ports:
-      - "8000:8000"
+      - "8001:8000"
     volumes:
-      - ./app:/app
+      - ./backend/:/srv/app
+      - static:/srv/app/static
+      - media:/srv/app/media
     command: >
       sh -c "python manage.py wait_for_db &&
                   python manage.py migrate &&
@@ -20,8 +22,26 @@ services:
     depends_on:
       - db
 
+  frontend:
+    build: ./frontend
+    command: npm start
+    ports:
+      - "3001:3000"
+    env_file:
+      - ./.env.dev
+    tty: true
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+    volumes:
+      - ./frontend/:/srv/app
+      - node_modules:/srv/app/node_modules
+    depends_on:
+      - backend
+
   db:
     image: postgres:13-alpine
+    ports:
+      - "5432:5432"
     volumes:
       - dev-db-data:/var/lib/postgresql/data
     environment:
@@ -29,5 +49,21 @@ services:
       - POSTGRES_USER=devuser
       - POSTGRES_PASSWORD=changeme
 
+  nginx:
+    build: ./nginx
+    ports:
+      - "8080:80"
+    restart: always
+    volumes:
+      - static:/srv/app/static
+      - media:/srv/app/media
+    depends_on:
+      - backend
+      - frontend
+      - db
+
 volumes:
   dev-db-data:
+  node_modules:
+  media:
+  static:
