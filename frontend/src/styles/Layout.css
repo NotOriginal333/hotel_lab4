@@ -1,0 +1,32 @@
+.layout-header {
+  background-color: #282c34;
+  padding: 20px;
+  text-align: center;
+}
+
+.layout-header ul {
+  list-style: none;
+  padding: 0;
+}
+
+.layout-header ul li {
+  display: inline;
+  margin: 0 15px;
+}
+
+.layout-header ul li a {
+  color: white;
+  text-decoration: none;
+}
+
+.layout-content {
+  min-height: 80vh;
+  padding: 20px;
+}
+
+.layout-footer {
+  background-color: #282c34;
+  color: white;
+  text-align: center;
+  padding: 10px 0;
+}

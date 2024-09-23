@@ -1,0 +1,35 @@
+.cottage-list {
+    padding: 20px;
+}
+
+.cottage-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+.load-more-button {
+    margin: 20px auto;
+    padding: 10px 20px;
+    background-color: #008bf8;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.load-more-button:hover {
+    background-color: #005f9e;
+}
+
+@media (max-width: 768px) {
+    .cottage-container {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .card {
+        width: 100%;
+        max-width: 300px;
+    }
+}

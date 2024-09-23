@@ -1,30 +1,30 @@
-import React from 'react';
-import { Route, Routes, Link } from 'react-router-dom';
-import Register from './authentication/Register';
-import Login from './authentication/Login';
+import React, {useEffect} from 'react';
+import {Route, Routes} from 'react-router-dom';
+import Login from "./authentication/Login";
+import Register from "./authentication/Register";
+import CottageList from './resort/CottageList';
+import Layout from "./Layout";
+import CottageDetails from "./resort/CottageDetails";
 
-function App() {
+const App = () => {
+    useEffect(() => {
+        document.title = "Cottage Management";
+    }, []);
+
     return (
         <div className="App">
-            <header className="App-header">
-                <h1>Welcome to the User Authentication App</h1>
-                <nav>
-                    <ul>
-                        <li>
-                            <Link to="/register">Register</Link>
-                        </li>
-                        <li>
-                            <Link to="/login">Login</Link>
-                        </li>
-                    </ul>
-                </nav>
+            <Layout>
                 <Routes>
-                    <Route path="/register" element={<Register />} />
-                    <Route path="/login" element={<Login />} />
+                    <Route path="/cottages" element={<CottageList/>}/>
+                    <Route path="/register" element={<Register/>}/>
+                    <Route path="/login" element={<Login/>}/>
+                    <Route path="/" element={<CottageList/>}/>
+                    <Route path="/cottages/:id" element={<CottageDetails/>}/>
                 </Routes>
-            </header>
+            </Layout>
         </div>
     );
-}
+};
+
 
 export default App;
