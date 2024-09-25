@@ -38,6 +38,23 @@ services:
     depends_on:
       - backend
 
+  cypress:
+    image: "cypress/included:9.1.0"
+    container_name: cypress
+    depends_on:
+      - frontend
+      - backend
+      - db
+      - nginx
+    environment:
+      - CYPRESS_baseUrl=http://frontend:3000
+    command: npx cypress run
+    volumes:
+        - ./frontend:/app
+        - ./frontend/e2e/cypress:/app/cypress
+        - ./frontend/e2e/cypress.config.js:/app/cypress.config.js
+
+
   db:
     image: postgres:13-alpine
     ports:

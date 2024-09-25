@@ -47,7 +47,7 @@ const CottageList = () => {
                         title={cottage.name}
                         body={`Category: ${cottage.category}, Capacity: ${cottage.total_capacity},
                          Price: ${cottage.price_per_night}`}
-                        onMoreInfo={() => handleMoreInfo(cottage.id)} // Handle navigation
+                        onMoreInfo={() => handleMoreInfo(cottage.id)}
                     />
                 ))}
             </div>

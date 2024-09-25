@@ -1,10 +1,9 @@
 import React, { Component } from 'react';
-import { withRouter } from 'react-router-dom'; // For navigation
+import { withRouter } from 'react-router-dom';
 
 class CottageCard extends Component {
     handleMoreInfo = () => {
         const { cottage, history } = this.props;
-        // Redirect to cottage details page
         history.push(`/cottages/${cottage.id}`);
     };
 

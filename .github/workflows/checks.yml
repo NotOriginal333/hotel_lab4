@@ -3,7 +3,7 @@ name: Checks
 on: [push]
 
 jobs:
-  test-lint:
+  tests:
     name: Test
     runs-on: ubuntu-22.04
     steps:
@@ -47,6 +47,9 @@ jobs:
 
       - name: Run backend tests
         run: docker compose run --rm backend sh -c "python manage.py wait_for_db && python manage.py test"
+
+      - name: Run frontend tests
+        run: cypress run
       
       - name: Shut down Docker Compose
         if: always()
