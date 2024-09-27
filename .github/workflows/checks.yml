@@ -1,6 +1,6 @@
 name: Checks
 
-on: [push]
+on: [ push ]
 
 jobs:
   tests:
@@ -9,7 +9,7 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
-      
+
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
@@ -45,12 +45,17 @@ jobs:
         run: |
           docker compose -f docker-compose.yml up -d --build
 
+      - name: Install Cypress dependencies
+        run: npm install cypress --save-dev
+        working-directory: ./frontend
+
       - name: Run backend tests
         run: docker compose run --rm backend sh -c "python manage.py wait_for_db && python manage.py test"
 
-      - name: Run frontend tests
-        run: cypress run
-      
+      - name: Run frontend Cypress tests
+        run: npx cypress run
+        working-directory: ./frontend
+
       - name: Shut down Docker Compose
         if: always()
         run: docker compose down

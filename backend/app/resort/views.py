@@ -15,7 +15,7 @@ from rest_framework import (
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.authentication import TokenAuthentication
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny, IsAdminUser
 
 from core.models import (
     Cottage,
@@ -29,6 +29,15 @@ class CottageViewSet(viewsets.ModelViewSet):
     """Manage cottages in the database."""
     serializer_class = serializers.CottageSerializer
     queryset = Cottage.objects.all()
+    permission_classes = (AllowAny,)
+
+    def get_permissions(self):
+        """Set permissions based on the action."""
+        if self.action in ['create', 'update', 'partial_update', 'destroy']:
+            permission_classes = [IsAdminUser]
+        else:
+            permission_classes = [AllowAny]
+        return [permission() for permission in permission_classes]
 
     def _params_to_ints(self, qs):
         """Convert a list of strings to integers."""
@@ -49,16 +58,14 @@ class CottageViewSet(viewsets.ModelViewSet):
         ]
     )
     def get_queryset(self):
-        """Filter queryset for authenticated user."""
+        """Filter queryset for user."""
         assigned_only = bool(
             int(self.request.query_params.get('assigned_only', 0))
         )
         queryset = self.queryset
         if assigned_only:
-            queryset = queryset.filter(recipe__isnull=False)
-        return queryset.filter(
-            user=self.request.user
-        ).order_by('-name').distinct()
+            queryset = queryset.filter(cottage__isnull=False)
+        return queryset.order_by('-name').distinct()
 
 
 class BaseCottageAttrViewSet(mixins.UpdateModelMixin,
@@ -67,19 +74,25 @@ class BaseCottageAttrViewSet(mixins.UpdateModelMixin,
                              viewsets.GenericViewSet):
     """Base viewset for cottage attributes."""
     authentication_classes = (TokenAuthentication,)
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (AllowAny,)
+
+    def get_permissions(self):
+        """Set permissions based on the action."""
+        if self.action in ['create', 'update', 'partial_update', 'destroy']:
+            permission_classes = [IsAdminUser]
+        else:
+            permission_classes = [AllowAny]
+        return [permission() for permission in permission_classes]
 
     def get_queryset(self):
-        """Filter queryset for authenticated user."""
+        """Filter queryset for user."""
         assigned_only = bool(
             int(self.request.query_params.get('assigned_only', 0))
         )
         queryset = self.queryset
         if assigned_only:
             queryset = queryset.filter(cottage__isnull=False)
-        return queryset.filter(
-            user=self.request.user
-        ).order_by('-name').distinct()
+        return queryset.order_by('-name').distinct()
 
 
 class AmenitiesViewSet(BaseCottageAttrViewSet,
@@ -96,21 +109,26 @@ class BookingViewSet(mixins.UpdateModelMixin,
                      mixins.CreateModelMixin):
     """Manage booking in the database."""
     authentication_classes = (TokenAuthentication,)
-    permission_classes = (IsAuthenticated,)
     serializer_class = serializers.BookingSerializer
     queryset = Booking.objects.all()
 
+    def get_permissions(self):
+        """Set permissions based on the action."""
+        if self.action in ['create', 'update', 'partial_update', 'destroy']:
+            permission_classes = [IsAdminUser]
+        else:
+            permission_classes = [AllowAny]
+        return [permission() for permission in permission_classes]
+
     def get_queryset(self):
-        """Filter queryset for authenticated user."""
+        """Filter queryset for user."""
         assigned_only = bool(
             int(self.request.query_params.get('assigned_only', 0))
         )
         queryset = self.queryset
         if assigned_only:
             queryset = queryset.filter(cottage__isnull=False)
-        return queryset.filter(
-            user=self.request.user
-        ).order_by('-check_in').distinct()
+        return queryset.order_by('-check_in').distinct()
 
 
 class CheckAvailabilityView(generics.GenericAPIView):

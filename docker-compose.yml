@@ -5,7 +5,7 @@ services:
     build:
       context: ./backend
     ports:
-      - "8001:8000"
+      - "8000:8000"
     volumes:
       - ./backend/:/srv/app
       - static:/srv/app/static
@@ -14,11 +14,8 @@ services:
       sh -c "python manage.py wait_for_db &&
                   python manage.py migrate &&
                   python manage.py runserver 0.0.0.0:8000"
-    environment:
-      - DB_HOST=db
-      - DB_NAME=devdb
-      - DB_USER=devuser
-      - DB_PASS=changeme
+    env_file:
+      - .env.dev
     depends_on:
       - db
 
@@ -26,7 +23,7 @@ services:
     build: ./frontend
     command: npm start
     ports:
-      - "3001:3000"
+      - "3000:3000"
     env_file:
       - ./.env.dev
     tty: true
@@ -50,9 +47,9 @@ services:
       - CYPRESS_baseUrl=http://frontend:3000
     command: npx cypress run
     volumes:
-        - ./frontend:/app
-        - ./frontend/e2e/cypress:/app/cypress
-        - ./frontend/e2e/cypress.config.js:/app/cypress.config.js
+      - ./frontend:/app
+      - ./frontend/e2e/cypress:/app/cypress
+      - ./frontend/e2e/cypress.config.js:/app/cypress.config.js
 
 
   db:
@@ -61,10 +58,9 @@ services:
       - "5432:5432"
     volumes:
       - dev-db-data:/var/lib/postgresql/data
-    environment:
-      - POSTGRES_DB=devdb
-      - POSTGRES_USER=devuser
-      - POSTGRES_PASSWORD=changeme
+    env_file:
+      - .env.dev
+
 
   nginx:
     build: ./nginx
