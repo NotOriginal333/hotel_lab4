@@ -73,7 +73,6 @@ class AdminAmenitiesApiTest(TestCase):
 
     def test_delete_amenity(self):
         """Test deleting an amenity for admin."""
-        admin = create_admin()
         amenity = Amenities.objects.create(user=self.user, name='Big Bed')
 
         url = detail_url(amenity.id)
