@@ -15,7 +15,7 @@ from rest_framework import (
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.authentication import TokenAuthentication
-from rest_framework.permissions import IsAuthenticated, AllowAny, IsAdminUser
+from rest_framework.permissions import IsAuthenticated, AllowAny, IsAdminUser, IsAuthenticatedOrReadOnly
 
 from core.models import (
     Cottage,
@@ -114,11 +114,8 @@ class BookingViewSet(mixins.UpdateModelMixin,
 
     def get_permissions(self):
         """Set permissions based on the action."""
-        if self.action in ['create', 'update', 'partial_update', 'destroy']:
-            permission_classes = [IsAuthenticated]
-        else:
-            permission_classes = [AllowAny]
-        return [permission() for permission in permission_classes]
+        permissions = [IsAuthenticatedOrReadOnly]
+        return permissions
 
     def get_queryset(self):
         """Filter queryset for user."""
