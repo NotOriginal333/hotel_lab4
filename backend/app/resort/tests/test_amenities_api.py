@@ -51,6 +51,39 @@ class PublicAmenitiesApiTest(TestCase):
         self.assertEqual(res.status_code, status.HTTP_200_OK)
 
 
+class AdminAmenitiesApiTest(TestCase):
+    """Test admin API requests."""
+
+    def setUp(self):
+        self.client = APIClient()
+        self.user = create_admin()
+        self.client.force_authenticate(self.user)
+
+    def test_update_amenity(self):
+        """Test updating an amenity for admin."""
+        amenity = Amenities.objects.create(user=self.user, name='Good Dinner')
+
+        payload = {'name': 'Pool'}
+        url = detail_url(amenity.id)
+        res = self.client.patch(url, payload)
+
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        amenity.refresh_from_db()
+        self.assertEqual(amenity.name, payload['name'])
+
+    def test_delete_amenity(self):
+        """Test deleting an amenity for admin."""
+        admin = create_admin()
+        amenity = Amenities.objects.create(user=self.user, name='Big Bed')
+
+        url = detail_url(amenity.id)
+        res = self.client.delete(url)
+
+        self.assertEqual(res.status_code, status.HTTP_204_NO_CONTENT)
+        amenities = Amenities.objects.filter(user=self.user)
+        self.assertFalse(amenities.exists())
+
+
 class PrivateAmenitiesApiTest(TestCase):
     """Test authenticated API requests."""
 
@@ -83,31 +116,6 @@ class PrivateAmenitiesApiTest(TestCase):
         self.assertEqual(len(res.data), 2)
         self.assertEqual(res.data[0]['name'], amenity.name)
         self.assertEqual(res.data[0]['id'], amenity.id)
-
-    def test_update_amenity(self):
-        """Test updating an amenity."""
-        admin = create_admin()
-        amenity = Amenities.objects.create(user=admin, name='Good Dinner')
-
-        payload = {'name': 'Pool'}
-        url = detail_url(amenity.id)
-        res = self.client.patch(url, payload)
-
-        self.assertEqual(res.status_code, status.HTTP_200_OK)
-        amenity.refresh_from_db()
-        self.assertEqual(amenity.name, payload['name'])
-
-    def test_delete_amenity(self):
-        """Test deleting an amenity for admin."""
-        admin = create_admin()
-        amenity = Amenities.objects.create(user=admin, name='Big Bed')
-
-        url = detail_url(amenity.id)
-        res = self.client.delete(url)
-
-        self.assertEqual(res.status_code, status.HTTP_204_NO_CONTENT)
-        amenities = Amenities.objects.filter(user=self.user)
-        self.assertFalse(amenities.exists())
 
     def test_filter_amenities_assigned_to_cottages(self):
         """Test listing amenities by those assigned to cottages."""
