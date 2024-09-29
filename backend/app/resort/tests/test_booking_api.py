@@ -14,9 +14,13 @@ from resort.serializers import BookingSerializer
 BOOKING_URL = reverse('resort:booking-list')
 
 
-def create_user(email='user@example.com', password='testpass123'):
+def create_user(email='user@example.com', password='testpass123', is_staff=False):
     """Create and return a user."""
-    return get_user_model().objects.create_user(email=email, password=password)
+    return get_user_model().objects.create_user(
+        email=email,
+        password=password,
+        is_staff=is_staff
+    )
 
 
 def create_cottage(user, **kwargs):
@@ -86,10 +90,10 @@ class PublicBookingApiTests(TestCase):
     def setUp(self):
         self.client = APIClient()
 
-    def test_auth_required(self):
-        """Test that authentication is required for retrieving bookings."""
+    def test_auth_not_required(self):
+        """Test that authentication is not required for retrieving bookings."""
         res = self.client.get(BOOKING_URL)
-        self.assertEqual(res.status_code, status.HTTP_401_UNAUTHORIZED)
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
 
 
 class PrivateBookingApiTests(TestCase):

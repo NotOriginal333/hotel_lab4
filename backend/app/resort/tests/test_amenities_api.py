@@ -21,11 +21,12 @@ def detail_url(amenities_id):
     return reverse('resort:amenities-detail', args=[amenities_id])
 
 
-def create_user(email='user@example.com', password='testpass123'):
+def create_user(email='user@example.com', password='testpass123', is_staff=False):
     """Create and return a user."""
     return get_user_model().objects.create_user(
         email=email,
-        password=password
+        password=password,
+        is_staff=is_staff
     )
 
 
@@ -35,11 +36,11 @@ class PublicAmenitiesApiTest(TestCase):
     def setUp(self):
         self.client = APIClient()
 
-    def test_auth_required(self):
-        """Test that auth is required for retrieving amenities."""
+    def test_auth_not_required(self):
+        """Test that auth is not required for retrieving amenities."""
         res = self.client.get(AMENITIES_URL)
 
-        self.assertEqual(res.status_code, status.HTTP_401_UNAUTHORIZED)
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
 
 
 class PrivateAmenitiesApiTest(TestCase):
@@ -62,8 +63,8 @@ class PrivateAmenitiesApiTest(TestCase):
         self.assertEqual(res.status_code, status.HTTP_200_OK)
         self.assertEqual(res.data, serializer.data)
 
-    def test_amenities_limited_to_user(self):
-        """Test list of amenities is limited for authenticated user."""
+    def test_amenities_not_limited_to_user(self):
+        """Test list of amenities is not limited for authenticated user."""
         user2 = create_user(email='user2@example.com')
         Amenities.objects.create(user=user2, name='Clear')
         amenity = Amenities.objects.create(user=self.user, name='Comfortable')
@@ -71,13 +72,14 @@ class PrivateAmenitiesApiTest(TestCase):
         res = self.client.get(AMENITIES_URL)
 
         self.assertEqual(res.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(res.data), 1)
+        self.assertEqual(len(res.data), 2)
         self.assertEqual(res.data[0]['name'], amenity.name)
         self.assertEqual(res.data[0]['id'], amenity.id)
 
     def test_update_amenity(self):
         """Test updating an amenity."""
-        amenity = Amenities.objects.create(user=self.user, name='Good Dinner')
+        admin = create_user(is_staff=True)
+        amenity = Amenities.objects.create(user=admin, name='Good Dinner')
 
         payload = {'name': 'Pool'}
         url = detail_url(amenity.id)
@@ -88,8 +90,9 @@ class PrivateAmenitiesApiTest(TestCase):
         self.assertEqual(amenity.name, payload['name'])
 
     def test_delete_amenity(self):
-        """Test deleting an amenity."""
-        amenity = Amenities.objects.create(user=self.user, name='Big Bed')
+        """Test deleting an amenity for admin."""
+        admin = create_user(is_staff=True)
+        amenity = Amenities.objects.create(user=admin, name='Big Bed')
 
         url = detail_url(amenity.id)
         res = self.client.delete(url)

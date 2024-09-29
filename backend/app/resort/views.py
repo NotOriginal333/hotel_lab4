@@ -115,7 +115,7 @@ class BookingViewSet(mixins.UpdateModelMixin,
     def get_permissions(self):
         """Set permissions based on the action."""
         if self.action in ['create', 'update', 'partial_update', 'destroy']:
-            permission_classes = [IsAdminUser]
+            permission_classes = [IsAuthenticated]
         else:
             permission_classes = [AllowAny]
         return [permission() for permission in permission_classes]
