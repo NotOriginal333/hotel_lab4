@@ -14,12 +14,11 @@ from resort.serializers import BookingSerializer
 BOOKING_URL = reverse('resort:booking-list')
 
 
-def create_user(email='user@example.com', password='testpass123', is_staff=False):
+def create_user(email='user@example.com', password='testpass123'):
     """Create and return a user."""
     return get_user_model().objects.create_user(
         email=email,
-        password=password,
-        is_staff=is_staff
+        password=password
     )
 
 

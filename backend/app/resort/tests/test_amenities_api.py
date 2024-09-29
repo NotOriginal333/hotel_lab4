@@ -21,7 +21,15 @@ def detail_url(amenities_id):
     return reverse('resort:amenities-detail', args=[amenities_id])
 
 
-def create_user(email='user@example.com', password='testpass123', is_staff=False):
+def create_user(email='user@example.com', password='testpass123'):
+    """Create and return a user."""
+    return get_user_model().objects.create_user(
+        email=email,
+        password=password
+    )
+
+
+def create_admin(email='admin@example.com', password='testpass123', is_staff=True):
     """Create and return a user."""
     return get_user_model().objects.create_user(
         email=email,
@@ -78,7 +86,7 @@ class PrivateAmenitiesApiTest(TestCase):
 
     def test_update_amenity(self):
         """Test updating an amenity."""
-        admin = create_user(is_staff=True)
+        admin = create_admin()
         amenity = Amenities.objects.create(user=admin, name='Good Dinner')
 
         payload = {'name': 'Pool'}
@@ -91,7 +99,7 @@ class PrivateAmenitiesApiTest(TestCase):
 
     def test_delete_amenity(self):
         """Test deleting an amenity for admin."""
-        admin = create_user(is_staff=True)
+        admin = create_admin()
         amenity = Amenities.objects.create(user=admin, name='Big Bed')
 
         url = detail_url(amenity.id)
