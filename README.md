@@ -40,7 +40,7 @@ docker compose -f docker-compose.yml -f cy-open.yml up --exit-code-from cypress 
 ```
 
 
-## Ports that user in app:
+## Ports that used in app:
 
 ### For postgres (db):
 
